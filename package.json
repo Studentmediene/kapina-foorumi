@@ -1,0 +1,38 @@
+{
+  "name": "foorumi",
+  "version": "1.0.0",
+  "description": "Repo for the platform game at the 404 page on radiorevolt.no",
+  "main": "index.js",
+  "devDependencies": {
+    "react-scripts": "0.7.0"
+  },
+  "dependencies": {
+    "react": "^15.3.2",
+    "react-dom": "^15.3.2"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Studentmediene/foorumi.git"
+  },
+  "keywords": [
+    "platform",
+    "game",
+    "radio",
+    "revolt"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Studentmediene/foorumi/issues"
+  },
+  "homepage": "https://github.com/Studentmediene/foorumi#readme",
+  "dependencies": {
+    "create-react-app": "^0.6.0"
+  }
+}
