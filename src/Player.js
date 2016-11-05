@@ -1,14 +1,10 @@
 
-
-
-
-var Player = function (context, width, height, image) {
+var Player = function (context, width, height, image, flippedImage) {
   this.context = context;
   this.width = width;
   this.height = height;
   this.image = image;
-
-  this.running = false;
+  this.flippedImage = flippedImage;
 
   this.standIndex = 0;
   this.runStartIndex = 1;
@@ -25,10 +21,14 @@ var Player = function (context, width, height, image) {
 
 };
 
-Player.prototype.render = function () {
+Player.prototype.render = function (flipped) {
   console.log('Drawing image')
+  let image = this.image;
+  if (flipped) {
+    image = this.flippedImage;
+  }
   this.context.drawImage(
-    this.image,
+    image,
     this.frameIndex * this.width / this.numberOfFrames,
     0,
     this.width / this.numberOfFrames,
@@ -40,43 +40,72 @@ Player.prototype.render = function () {
   );
 };
 
-Player.prototype._update = function (startIndex, endIndex) {
-  if (this.frameIndex < startIndex || this.frameIndex > endIndex) {
-    this.frameIndex = this.startIndex;
+Player.prototype._update = function (startIndex, endIndex, flipped) {
+  if (!flipped) {
+      if (this.frameIndex < startIndex || this.frameIndex > endIndex) {
+        this.frameIndex = startIndex;
+      }
+      this.tickCount += 1;
+      if (this.tickCount > this.ticksPerFrame) {
+        this.tickCount = 0;
+        if (this.frameIndex < endIndex) {
+          this.frameIndex += 1;
+        }
+        else {
+          this.frameIndex = startIndex;
+        }
+      }
   }
-  this.tickCount += 1;
-  if (this.tickCount > this.ticksPerFrame) {
-    console.log(this.frameIndex);
-
-    this.tickCount = 0;
-    if (this.frameIndex < endIndex) {
-      this.frameIndex += 1;
-    }
-    else {
+  else {
+    /* Adjust the indexes to the flipped image */
+    startIndex = this.numberOfFrames - startIndex - 1;
+    endIndex = this.numberOfFrames - endIndex - 1;
+    console.log(startIndex, endIndex);
+    if (this.frameIndex > startIndex || this.frameIndex < endIndex) {
       this.frameIndex = startIndex;
     }
+    this.tickCount += 1;
+    if (this.tickCount > this.ticksPerFrame) {
+      this.tickCount = 0;
+      if (this.frameIndex > endIndex) {
+        this.frameIndex -= 1;
+      }
+      else {
+        this.frameIndex = startIndex;
+      }
+    }
   }
+
 }
 
 /*
   Cycles through the running sprites.
 */
-Player.prototype.updateRun = function () {
-  this._update(this.runStartIndex, this.runEndIndex);
+Player.prototype.updateRun = function (flipped) {
+  this._update(this.runStartIndex, this.runEndIndex, flipped);
 };
 
 /*
   Chooses the index for the stand sprite to be the active frameindex.
 */
-Player.prototype.updateStand = function () {
-  this.frameIndex = this.standIndex;
+Player.prototype.updateStand = function (flipped) {
+  if (flipped) {
+    this.frameIndex = this.numberOfFrames - this.standIndex - 1;
+  }
+  else {
+    this.frameIndex = this.standIndex;
+  }
 }
 
 /*
   Cycles through the throwing sprites.
 */
-Player.prototype.updateThrow = function() {
-  this._update(this.throwStartIndex, this.throwEndIndex);
+Player.prototype.updateThrow = function(flipped) {
+  this._update(this.throwStartIndex, this.throwEndIndex, flipped);
+}
+
+Player.prototype.updateJump = function(flipped) {
+  this._update(this.jumpStartIndex, this.jumpEndIndex, flipped);
 }
 
 
