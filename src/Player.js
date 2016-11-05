@@ -31,15 +31,18 @@ export default class Player {
   tickCount = 0;
   ticksPerFrame = 5;
   numberOfFrames = 14;
+  spriteWidth = 96;
+  spriteHeight = 80;
 
   // Fields containing the state of the player
-  x = 0;
-  y = 0;
+  x = 0; // The centre of the player
+  y = 0; // The centre of the player
   currentSpeedX = 0;
   currentSpeedY = 0;
 
-  playerHitBoxWidth = 40;
-  playerHitBoxHeight = 80;
+  hitBoxWidth = 40;
+  hitBoxHeight = 80;
+
 
   state = PlayerState.STANDING;
 
@@ -55,19 +58,19 @@ export default class Player {
       0, // Start y clip of image
       this.width / this.numberOfFrames, // End x clip of image
       this.height, // End y clip of image
-      this.x, // Start x
-      this.y, // Start y
+      this.x - this.spriteWidth/2, // Start x on canvas
+      this.y, // Start y on canvas
       this.width / this.numberOfFrames, // Width on canvas
       this.height // Height on canvas
     );
   };
 
   update() {
-    if (this.state == PlayerState.RUNNING) {
+    if (this.state === PlayerState.RUNNING) {
       this.updateRun()
-    } else if (this.state == PlayerState.JUMPING) {
+    } else if (this.state === PlayerState.JUMPING) {
       this.updateJump()
-    } else if (this.state == PlayerState.THROWING) {
+    } else if (this.state === PlayerState.THROWING) {
       this.updateThrow()
     } else {
       this.updateStand()
