@@ -32,7 +32,7 @@ class Canvas extends Component {
   windowOffset = 0;
   player: null;
 
-  _maxWindowOffsetX = - lvl1[0].length * this.tileSize + this.TILES_IN_VIEW_X * this.tileSize
+  maxWindowOffsetX = - lvl1[0].length * this.tileSize + this.TILES_IN_VIEW_X * this.tileSize
 
 
   componentDidMount() {
@@ -71,9 +71,9 @@ class Canvas extends Component {
     const flippedImage = new Image();
     image.src = playerImage;
     flippedImage.src = flippedPlayerImage;
-    this.player = new Player(this._context, 1344, 80, image, flippedImage);
+    this.player = new Player(this._context, 1344, 80, this.props.width, this.props.height,  image, flippedImage);
     this.player.x = this.props.width/2;
-    this.player.y = this.props.height - this.tileSize - this.player.height + 4;
+    this.player.y = this.props.height - 37*2 - this.player.hitBoxHeight/2;
 
     // Start the animation
     this.startTime = Date.now();
@@ -107,7 +107,6 @@ class Canvas extends Component {
     // Put all computations of the new state here
     this.updateWindowOffset();
     this.updatePlayerPosition()
-    //this._updateBall();
   }
 
   updateWindowOffset() {
@@ -128,85 +127,13 @@ class Canvas extends Component {
     // Handle situations when the window is on the edge of the map
     if (this.windowOffset > 0) {
       this.windowOffset = 0;
-    } else if (this.windowOffset < this._maxWindowOffsetX){
-      this.windowOffset = this._maxWindowOffsetX
+    } else if (this.windowOffset < this.maxWindowOffsetX){
+      this.windowOffset = this.maxWindowOffsetX
     }
   }
 
   updatePlayerPosition() {
-    /**
-     * Must be run after this._updateWindowOffset();
-    */
-    if(this.keystate[37]){ // Pressing left
-      this.player.isFlipped = true;
-      // If we are not jumping, then we are running
-      if (this.player.state !== PlayerState.JUMPING) {
-        this.player.state = PlayerState.RUNNING;
-      }
-      if (this.windowOffset === 0) {
-        // We are at the left edge
-        //console.log('We are moving left, and are at the left edge')
-        this.player.x -= this._dx
-      } else if (this.windowOffset === this._maxWindowOffsetX) {
-        // We are at the right edge
-        //console.log('We are moving left and are at the right edge')
-        this.player.x -= this._dx
-      }
-    } else if(this.keystate[39]){ // Pressing right
-      this.player.isFlipped = false;
-      // If we are not jumping, then we are running
-      if (this.player.state !== PlayerState.JUMPING) {
-        this.player.state = PlayerState.RUNNING;
-      }
-      if (this.windowOffset === 0) {
-        // We are at the left edge
-        //console.log('We are moving right, and are at the left edge')
-        this.player.x += this._dx
-      } else if (this.windowOffset === this._maxWindowOffsetX) {
-          // We are at the right edge
-          //console.log('We are moving right and are at the right edge')
-          this.player.x += this._dx
-      }
-    } else if(this.player.state !== PlayerState.JUMPING) {
-      this.player.state = PlayerState.STANDING;
-    }
-
-    // Handle jumping
-    // If the player is not already jumping, and "up" is pressed...
-    if(this.player.state !== PlayerState.JUMPING && this.keystate[38]) {
-      this.player.state = PlayerState.JUMPING;
-    }
-    if(this.player.state === PlayerState.JUMPING) {
-      this.player.y += this._dy;
-      this._dy += 4;
-      if(this.player.y > this.props.height - this.tileSize - this.player.height + 4){
-        this.player.state = PlayerState.STANDING;
-        this.player.y = this.props.height - this.tileSize - this.player.height + 4;
-        this._dy = -40;
-      }
-    }
-
-    // Handle cases where the player is about to leave the stage
-    if(this.player.x < this.player.hitBoxWidth/2){
-      console.log('Player hit left wall!')
-      this.player.x = this.player.hitBoxWidth/2;
-    } else if (this.player.x > this.props.width - this.player.hitBoxWidth/2) {
-      console.log('Player hit right wall!')
-      this.player.x = this.props.width - this.player.hitBoxWidth/2;
-    }
-
-    // Handle cases where the player runs past the middle of the screen
-    if(this.windowOffset === 0 && this.player.x > this.props.width/2){
-      // We are at the left edge
-      console.log('Player ran in the right direction across the middle!')
-      this.player.x = this.props.width/2
-    } else if (this.windowOffset === this._maxWindowOffsetX && this.player.x < this.props.width/2) {
-      // We are at the right edge
-      console.log('Player ran left across the middle!')
-      this.player.x = this.props.width/2;
-    }
-
-    this.player.update();
+    this.player.update(this.keystate, this.windowOffset, this.maxWindowOffsetX);
   }
 
   _draw() {
