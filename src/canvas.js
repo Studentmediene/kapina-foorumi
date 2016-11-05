@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import ReactDom from 'react-dom';
 
-import styles from './canvas.css'
+import './canvas.css'
 import lvl1 from './level1'
 
 class Canvas extends Component {

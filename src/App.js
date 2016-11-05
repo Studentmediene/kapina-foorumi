@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import ReactDom from 'react-dom';
 
 import Canvas from './canvas';
 import './App.css';
