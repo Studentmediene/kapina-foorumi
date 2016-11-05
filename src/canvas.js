@@ -3,7 +3,7 @@ import ReactDom from 'react-dom';
 
 import './canvas.css'
 import Player from './Player'
-import playerImage from './it-man-sprite2.png'
+import playerImage from './it-man-sprite.png'
 import flippedPlayerImage from './it-man-sprite-flipped.png'
 import './canvas.css'
 import lvl1 from './level1'
@@ -36,7 +36,7 @@ class Canvas extends Component {
   _windowOffsetX = 0;
   _windowOffsetY = 0;
   _player: null;
-  _playerFlipped = false;
+  _playerFlipped = true;
   _playerWidth = 40;
   _playerHeight = -80;
   _playerX = this.props.width/2 - this._playerWidth/2;
