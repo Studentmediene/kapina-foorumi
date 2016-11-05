@@ -13,7 +13,7 @@ class Canvas extends Component {
     this.drawTile = this.drawTile.bind(this);
   }
 
-  fps = 24;
+  fps = 50;
   fpsInterval = 1000/this.fps;
   startTime = undefined;
   now = undefined;
@@ -81,8 +81,6 @@ class Canvas extends Component {
   }
 
   _animate() {
-    // request another frame
-    requestAnimationFrame(this._animate);
 
     // calc elapsed time since last loop
 
@@ -100,6 +98,8 @@ class Canvas extends Component {
         this._draw();
 
     }
+      // request another frame
+      requestAnimationFrame(this._animate);
   }
 
   _update() {
