@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ReactDom from 'react-dom';
 
 import './canvas.css'
-import Player from './Player'
+import Player, { PlayerState } from './Player'
 import playerImage from './it-man-sprite.png'
 import flippedPlayerImage from './it-man-sprite-flipped.png'
 import './canvas.css'
@@ -12,21 +12,20 @@ class Canvas extends Component {
   constructor(props) {
     super(props);
     this._startGame = this._startGame.bind(this);
-    this._animate = this._animate.bind(this);
+    this.animate = this.animate.bind(this);
   }
 
+  // Fields handling the speed of the game loop
   fps = 50;
   fpsInterval = 1000/this.fps;
   startTime = undefined;
   then = undefined;
-  elapsed = undefined;
-
 
   TILES_IN_VIEW_X = 16;
   _keystate = {};
   _canvas = undefined;
   _context = undefined;
-  _loop: null;
+  gameStarted = false;
   _ballRadius = 10;
   _x = this.props.width/2;
   _y = this.props.height-30;
@@ -35,15 +34,10 @@ class Canvas extends Component {
   tileSize = 40;
   _windowOffsetX = 0;
   _windowOffsetY = 0;
-  _player: null;
-  _playerFlipped = true;
-  _playerWidth = 40;
-  _playerHeight = -80;
-  _playerX = this.props.width/2 - this._playerWidth/2;
-  _playerY = this.props.height - this.tileSize;
-
-  //MOVE TO PLAYER.js LATER
-  isJumping = false;
+  player: null;
+  playerFlipped = true;
+  playerWidth = 40;
+  playerHeight = -80;
 
   _maxWindowOffsetX = - lvl1[0].length * this.tileSize + this.TILES_IN_VIEW_X * this.tileSize
 
@@ -66,8 +60,8 @@ class Canvas extends Component {
 
   _startGame() {
 
-    // If the game loop is already started, do nothing.
-    if(this._loop){
+    // If the game is already started, do nothing.
+    if(this.gameStarted){
       return;
     }
 
@@ -81,47 +75,44 @@ class Canvas extends Component {
       //console.log('key up')
     });
 
+    // Initialize the player
     const image = new Image();
     const flippedImage = new Image();
     image.src = playerImage;
     flippedImage.src = flippedPlayerImage;
-    this._player = new Player(this._context, 1050, 80, image, flippedImage);
+    this.player = new Player(this._context, 1050, 80, image, flippedImage);
+    this.player.x = this.props.width/2 - this.playerWidth/2;
+    this.player.y = this.props.height - this.tileSize - this.player.height + 4;
 
-
-
-
-    this.fpsInterval = 1000/this.fps;
-    this.then = Date.now();
-    this.startTime = this.then;
-    this._animate()
+    // Start the animation
+    this.startTime = Date.now();
+    this.then = this.startTime;
+    this.gameStarted = true;
+    this.animate()
 
   }
 
-  _animate() {
+  animate() {
 
     // calc elapsed time since last loop
-
     const now = Date.now();
     const elapsed = now - this.then;
 
     if (elapsed > this.fpsInterval) {
-
         // Get ready for next frame by setting then=now, but also adjust for your
         // specified fpsInterval not being a multiple of RAF's interval (16.7ms)
         this.then = now - (elapsed % this.fpsInterval);
 
-        // Put your drawing code here
+        // Update the state of the game for the next frame
         this._update();
+        // Draw the next frame
         this._draw();
-
     }
       // request another frame
-      requestAnimationFrame(this._animate);
+      requestAnimationFrame(this.animate);
   }
 
   _update() {
-    this._player.updateRun(this._playerFlipped);
-
     // Put all computations of the new state here
     this._updateWindowOffset();
     this._updatePlayerPosition()
@@ -133,12 +124,12 @@ class Canvas extends Component {
     //console.log(lvl1[0].length * this.tileSize)
     if (this._keystate[39]){ // Right pressed
       // If the player is moving on the left side, do nothing
-      if(this._playerX < this.props.width/2 - this._playerWidth/2){
+      if(this.player.x < this.props.width/2 - this.playerWidth/2){
         return;
       }
       this._windowOffsetX -= this._dx
     } else if (this._keystate[37]) { // Left pressed
-      if(this._playerX > this.props.width/2 - this._playerWidth/2){
+      if(this.player.x > this.props.width/2 - this.playerWidth/2){
         return
       }
       this._windowOffsetX += this._dx
@@ -155,111 +146,92 @@ class Canvas extends Component {
      * Must be run after this._updateWindowOffset();
     */
     if(this._keystate[37]){ // Pressing left
+      this.player.isFlipped = true;
+      if (this.player.state !== PlayerState.JUMPING) {
+        console.log('Now running')
+        this.player.state = PlayerState.RUNNING;
+      }
       if (this._windowOffsetX === 0) {
         // We are at the left edge
         //console.log('We are moving left, and are at the left edge')
-        this._playerX -= this._dx
+        this.player.x -= this._dx
       } else if (this._windowOffsetX === this._maxWindowOffsetX) {
         // We are at the right edge
         //console.log('We are moving left and are at the right edge')
-        this._playerX -= this._dx
+        this.player.x -= this._dx
       }
     } else if(this._keystate[39]){ // Pressing right
+      this.player.isFlipped = false;
+
+      if (this.player.state !== PlayerState.JUMPING) {
+        console.log('Now running')
+        this.player.state = PlayerState.RUNNING;
+      }
       if (this._windowOffsetX === 0) {
         // We are at the left edge
         //console.log('We are moving right, and are at the left edge')
-        this._playerX += this._dx
+        this.player.x += this._dx
       }
       else if (this._windowOffsetX === this._maxWindowOffsetX) { // Right pressed
           // We are at the right edge
           //console.log('We are moving right and are at the right edge')
-          this._playerX += this._dx
+          this.player.x += this._dx
       }
     }
 
     // Handle jumping
     // If the player is not already jumping, and "up" is pressed...
-    if(!this.isJumping && this._keystate[38]) {
-      this.isJumping = true;
+    if(this.player.state !== PlayerState.JUMPING && this._keystate[38]) {
+      this.player.state = PlayerState.JUMPING;
     }
-    if(this.isJumping) {
-      this._playerY += this._dy;
+    if(this.player.state === PlayerState.JUMPING) {
+      this.player.y += this._dy;
       this._dy += 4;
-      if(this._playerY > this.props.height - this.tileSize){
-        this.isJumping = false;
-        this._playerY = this.props.height - this.tileSize;
+      if(this.player.y > this.props.height - this.tileSize - this.player.height + 4){
+        console.log('NOW STANDING')
+        this.player.state = PlayerState.STANDING;
+        this.player.y = this.props.height - this.tileSize - this.player.height + 4;
         this._dy = -40;
       }
     }
 
     // Handle cases where the player is about to leave the stage
-    if(this._playerX < 0){
+    if(this.player.x < 0){
       console.log('Player hit left wall!')
-      this._playerX = 0;
-    } else if (this._playerX > this.props.width - this._playerWidth) {
+      this.player.x = 0;
+    } else if (this.player.x > this.props.width - this.playerWidth) {
       console.log('Player hit right wall!')
-      this._playerX = this.props.width - this._playerWidth;
+      this.player.x = this.props.width - this.playerWidth;
     }
 
     // Handle cases where the player runs past the middle of the screen
-    if(this._windowOffsetX === 0 && this._playerX > this.props.width/2 - this._playerWidth/2){
+    if(this._windowOffsetX === 0 && this.player.x > this.props.width/2 - this.playerWidth/2){
       // We are at the left edge
       console.log('Player ran right across the middle!')
-      this._playerX = this.props.width/2 - this._playerWidth/2
-    } else if (this._windowOffsetX === this._maxWindowOffsetX && this._playerX < this.props.width/2 - this._playerWidth/2) {
+      this.player.x = this.props.width/2 - this.playerWidth/2
+    } else if (this._windowOffsetX === this._maxWindowOffsetX && this.player.x < this.props.width/2 - this.playerWidth/2) {
       // We are at the right edge
       console.log('Player ran left across the middle!')
-      this._playerX = this.props.width/2 - this._playerWidth/2
+      this.player.x = this.props.width/2 - this.playerWidth/2
     }
+
+    this.player.update();
   }
 
   _draw() {
-
-    //this._player.updateRun();
-
     // Only put drawing on the canvas element here.
-    this._context.clearRect(0, 0, this.props.width, this.props.height);
-    this.drawTiles();
-    this._drawPlayer();
-        this._player.render(this._playerFlipped);
-    //this._drawBall();
+    this._context.clearRect(0, 0, this.props.width, this.props.height); // Clear canvas
+    this.drawTiles(); // Draw the tiles in the world
+    this.drawPlayer(); // Draw the player
   }
 
-  _drawBall() {
-    this._context.beginPath();
-    this._context.arc(this._x, this._y, this._ballRadius, 0, Math.PI*2);
-    this._context.fillStyle = "#0095DD";
-    this._context.fill();
-    this._context.closePath();
-  }
+  drawPlayer() {
 
-  _drawPlayer() {
-    this.drawTile(this._playerX,
-      this._playerY,
-      this._playerHeight,
-      this._playerWidth,
-      0,
-      0);
-
-      this._context.lineWidth = 1;
-      this._context.strokeStyle = "black";
-      this._context.beginPath();
-      this._context.arc(this._playerX + this._playerWidth/2, this._playerY - 60, this._ballRadius, 0, Math.PI);
-      this._context.stroke()
-      this._context.closePath();
-
-      this._context.beginPath();
-      this._context.arc(this._playerX + this._playerWidth/2 - 5, this._playerY - 65, 2, 0, Math.PI*2);
-      this._context.stroke()
-      this._context.closePath();
-
-      this._context.beginPath();
-      this._context.arc(this._playerX + this._playerWidth/2 + 5, this._playerY - 65, 2, 0, Math.PI*2);
-      this._context.stroke();
-      this._context.closePath();
+    this.player.render(this.playerFlipped);
   }
 
   drawTiles() {
+    this._context.beginPath();
     this._context.lineWidth = 1;
     this._context.fillStyle = "rgba(255,0,0,0.6)";
     this._context.strokeStyle = "black";
@@ -275,34 +247,23 @@ class Canvas extends Component {
         }
       });
     });
+    this._context.fill();
+    this._context.stroke();
+    this._context.closePath();
   }
 
   drawTile(x,y, length, height, offsetX, offsetY){
-    this._context.fillRect(
+    this._context.rect(
       x + offsetX, y + offsetY,
       height, length
     );
-    this._context.strokeRect(
-      x + offsetX, y + offsetY,
-      height, length
-    );
-  }
-
-  _updateBall() {
-    if(this._x + this._dx > this.props.width - this._ballRadius || this._x + this._dx < this._ballRadius) {
-      this._dx = -this._dx;
-    }
-
-    if(this._y + this._dy > this.props.height - this._ballRadius || this._y + this._dy < this._ballRadius) {
-      this._dy = -this._dy;
-    }
-    this._x += this._dx;
-    this._y += this._dy;
   }
 
   render() {
     return (
-      <canvas id="myCanvas" className={'canvas'} width={this.props.width} height={this.props.height}></canvas>
+      <canvas id="myCanvas" className={'canvas'} width={this.props.width} height={this.props.height}>
+        Your browser is not good enough to play our amazing game.
+      </canvas>
     );
   }
 }
