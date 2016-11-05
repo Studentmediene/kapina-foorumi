@@ -82,7 +82,7 @@ class Canvas extends Component {
     const flippedImage = new Image();
     image.src = playerImage;
     flippedImage.src = flippedPlayerImage;
-    this._player = new Player(this._context, 1048, 80, image, flippedImage);
+    this._player = new Player(this._context, 1050, 80, image, flippedImage);
 
 
 
@@ -117,7 +117,7 @@ class Canvas extends Component {
   }
 
   _update() {
-    this._player.updateThrow(this._playerFlipped);
+    this._player.updateRun(this._playerFlipped);
 
     // Put all computations of the new state here
     this._updateWindowOffset();
