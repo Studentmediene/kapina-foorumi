@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import ReactDom from 'react-dom';
 
+import styles from './canvas.css'
+import Player from './Player'
+import playerImage from './it-man-sprite.png'
 import './canvas.css'
 import lvl1 from './level1'
 
@@ -34,6 +37,7 @@ class Canvas extends Component {
   tileSize = 40;
   _windowOffsetX = 0;
   _windowOffsetY = 0;
+  _player: null;
   _playerWidth = 40;
   _playerHeight = -80;
   _playerX = this.props.width/2 - this._playerWidth/2;
@@ -72,6 +76,12 @@ class Canvas extends Component {
       //console.log('key up')
     });
 
+    const image = new Image();
+    image.src = playerImage;
+    this._player = new Player(this._context, 1048, 80, image);
+
+
+
 
     this.fpsInterval = 1000/this.fps;
     this.then = Date.now();
@@ -103,6 +113,8 @@ class Canvas extends Component {
   }
 
   _update() {
+    this._player.updateRun();
+
     // Put all computations of the new state here
     this._updateWindowOffset();
     this._updatePlayerPosition()
@@ -168,10 +180,14 @@ class Canvas extends Component {
   }
 
   _draw() {
+
+    //this._player.updateRun();
+
     // Only put drawing on the canvas element here.
     this._context.clearRect(0, 0, this.props.width, this.props.height);
     this.drawTiles();
     this._drawPlayer();
+        this._player.render();
     //this._drawBall();
   }
 
