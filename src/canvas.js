@@ -80,7 +80,7 @@ class Canvas extends Component {
     const flippedImage = new Image();
     image.src = playerImage;
     flippedImage.src = flippedPlayerImage;
-    this.player = new Player(this._context, 1050, 80, image, flippedImage);
+    this.player = new Player(this._context, 1344, 80, image, flippedImage);
     this.player.x = this.props.width/2 - this.playerWidth/2;
     this.player.y = this.props.height - this.tileSize - this.player.height + 4;
 
