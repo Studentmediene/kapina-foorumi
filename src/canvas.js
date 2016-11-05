@@ -8,9 +8,20 @@ class Canvas extends Component {
   constructor(props) {
     super(props);
     this._startGame = this._startGame.bind(this);
+    this._animate = this._animate.bind(this);
     this.drawTiles = this.drawTiles.bind(this);
     this.drawTile = this.drawTile.bind(this);
   }
+
+  fps = 24;
+  fpsInterval = 1000/this.fps;
+  startTime = undefined;
+  now = undefined;
+  then = undefined;
+  elapsed = undefined;
+
+
+  TILES_IN_VIEW_X = 16;
   _keystate = {};
   _canvas = undefined;
   _context = undefined;
@@ -18,9 +29,15 @@ class Canvas extends Component {
   _ballRadius = 10;
   _x = this.props.width/2;
   _y = this.props.height-30;
-  _dx = 4;
-  _dy = -4;
+  _dx = 8;
+  _dy = 8;
   tileSize = 40;
+  _windowOffsetX = 0;
+  _windowOffsetY = 0;
+  _playerWidth = 40;
+  _playerHeight = -80;
+  _playerX = this.props.width/2 - this._playerWidth/2;
+  _playerY = this.props.height - this.tileSize;
 
   componentDidMount() {
     this._setupCanvas();
@@ -30,6 +47,8 @@ class Canvas extends Component {
       this.props.height/2 );
     setTimeout(this._startGame, 500);
   }
+
+
 
   _setupCanvas() {
     this._canvas = ReactDom.findDOMNode(this);
@@ -43,31 +62,117 @@ class Canvas extends Component {
       return;
     }
 
-    const keystate = this._keystate;
-    document.addEventListener('keydown', function(evt) {
-      keystate[evt.keyCode] = true;
+    document.addEventListener('keydown', (evt) => {
+      this._keystate[evt.keyCode] = true;
+      //console.log('Key pressed')
     });
-    document.addEventListener('keyup', function(evt) {
+    document.addEventListener('keyup', (evt) => {
       // Do not delete, setting to undefined is faster.
-      keystate[evt.keyCode] = undefined;
+      this._keystate[evt.keyCode] = undefined;
+      //console.log('key up')
     });
 
-    this._loop = setInterval(() => {
-      this._update();
-      this._draw();
-    },15);
+
+    this.fpsInterval = 1000/this.fps;
+    this.then = Date.now();
+    this.startTime = this.then;
+    this._animate()
+
+  }
+
+  _animate() {
+    // request another frame
+    requestAnimationFrame(this._animate);
+
+    // calc elapsed time since last loop
+
+    const now = Date.now();
+    const elapsed = now - this.then;
+
+    if (elapsed > this.fpsInterval) {
+
+        // Get ready for next frame by setting then=now, but also adjust for your
+        // specified fpsInterval not being a multiple of RAF's interval (16.7ms)
+        this.then = now - (elapsed % this.fpsInterval);
+
+        // Put your drawing code here
+        this._update();
+        this._draw();
+
+    }
   }
 
   _update() {
     // Put all computations of the new state here
-    this._updateBall();
+    this._updateWindowOffset();
+    this._updatePlayerPosition()
+    //this._updateBall();
+  }
+
+  _updateWindowOffset() {
+    //console.log(this._windowOffsetX)
+    //console.log(lvl1[0].length * this.tileSize)
+    if (this._keystate[39]){ // Right pressed
+      if(this._playerX < this.props.width/2 - this._playerWidth/2){
+        return;
+      }
+      this._windowOffsetX -= this._dx
+    } else if (this._keystate[37]) { // Left pressed
+      if(this._playerX > this.props.width/2 - this._playerWidth/2){
+        return
+      }
+      this._windowOffsetX += this._dx
+    }
+    if (this._windowOffsetX > 0) {
+      this._windowOffsetX = 0;
+    } else if (this._windowOffsetX < -lvl1[0].length * this.tileSize + this.TILES_IN_VIEW_X * this.tileSize){
+      this._windowOffsetX = - lvl1[0].length * this.tileSize + this.TILES_IN_VIEW_X * this.tileSize
+    }
+  }
+
+  _updatePlayerPosition() {
+    /**
+     * Must be run after this._updateWindowOffset();
+    */
+    if(this._keystate[37]){ // Pressing left
+      if (this._windowOffsetX == 0) {
+        // We are at the left edge
+        console.log('We are moving left, and are at the left edge')
+        this._playerX -= this._dx
+      } else if (this._windowOffsetX === - lvl1[0].length * this.tileSize + this.TILES_IN_VIEW_X * this.tileSize) {
+        // We are at the right edge
+        console.log('We are moving left and are at the right edge')
+        this._playerX -= this._dx
+      }
+    } else if(this._keystate[39]){ // Pressing right
+      if (this._windowOffsetX == 0) {
+        // We are at the left edge
+        console.log('We are moving right, and are at the left edge')
+        this._playerX += this._dx
+      }
+      if (this._windowOffsetX == - lvl1[0].length * this.tileSize + this.TILES_IN_VIEW_X * this.tileSize) { // Right pressed
+          // We are at the right edge
+          console.log('We are moving right and are at the right edge')
+          this._playerX += this._dx
+      }
+    }
+
+    // Handle cases where the player is about to leave the stage
+    if(this._playerX < 0){
+      console.log('Player hit left wall!')
+      this._playerX = 0;
+    } else if (this._playerX > this.props.width - this._playerWidth) {
+      console.log('Player hit right wall!')
+      this._playerX = this.props.width - this._playerWidth;
+    }
   }
 
   _draw() {
     // Only put drawing on the canvas element here.
     this._context.clearRect(0, 0, this.props.width, this.props.height);
     this.drawTiles();
-    this._drawBall();
+    this._drawPlayer();
+    //this._drawBall();
   }
 
   _drawBall() {
@@ -78,33 +183,40 @@ class Canvas extends Component {
     this._context.closePath();
   }
 
+  _drawPlayer() {
+    this.drawTile(this._playerX,
+      this._playerY,
+      this._playerHeight,
+      this._playerWidth,
+      0,
+      0);
+  }
+
   drawTiles() {
-    const self = this;
     this._context.fillStyle = "rgba(255,0,0,0.6)";
     this._context.strokeStyle = "black";
-    lvl1.forEach(function(row,i){
-      row.forEach(function(tile,j){
+    lvl1.forEach((row,i) => {
+      row.forEach((tile,j) => {
         if(tile !== 'o'){ //if tile is not walkable
-          self.drawTile(j,i); //draw a rectangle at j,i
+          this.drawTile(j * this.tileSize,
+                        i * this.tileSize,
+                        this.tileSize,
+                        this.tileSize,
+                        this._windowOffsetX,
+                        this._windowOffsetY); //draw a rectangle at j,i
         }
       });
     });
   }
 
-  drawTile(x,y){
-    //console.log(x + y)
-    //console.log(this.tilesize)
-    //console.log('drawing tile at:')
-    //console.log(x * this.tileSize)
-    //console.log(y * this.tileSize)
-    //const self = this
+  drawTile(x,y, length, height, offsetX, offsetY){
     this._context.fillRect(
-      x * this.tileSize, y * this.tileSize,
-      this.tileSize, this.tileSize
+      x + offsetX, y + offsetY,
+      height, length
     );
     this._context.strokeRect(
-      x * this.tileSize, y * this.tileSize,
-      this.tileSize, this.tileSize
+      x + offsetX, y + offsetY,
+      height, length
     );
   }
 
