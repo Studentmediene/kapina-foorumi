@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import ReactDom from 'react-dom';
 
-import styles from './canvas.css'
+import './canvas.css'
 import Player from './Player'
 import playerImage from './it-man-sprite.png'
 import './canvas.css'
@@ -19,7 +19,6 @@ class Canvas extends Component {
   fps = 50;
   fpsInterval = 1000/this.fps;
   startTime = undefined;
-  now = undefined;
   then = undefined;
   elapsed = undefined;
 
@@ -42,6 +41,9 @@ class Canvas extends Component {
   _playerHeight = -80;
   _playerX = this.props.width/2 - this._playerWidth/2;
   _playerY = this.props.height - this.tileSize;
+
+  _maxWindowOffsetX = - lvl1[0].length * this.tileSize + this.TILES_IN_VIEW_X * this.tileSize
+
 
   componentDidMount() {
     this._setupCanvas();
@@ -125,6 +127,7 @@ class Canvas extends Component {
     //console.log(this._windowOffsetX)
     //console.log(lvl1[0].length * this.tileSize)
     if (this._keystate[39]){ // Right pressed
+      // If the player is moving on the left side, do nothing
       if(this._playerX < this.props.width/2 - this._playerWidth/2){
         return;
       }
@@ -137,8 +140,8 @@ class Canvas extends Component {
     }
     if (this._windowOffsetX > 0) {
       this._windowOffsetX = 0;
-    } else if (this._windowOffsetX < -lvl1[0].length * this.tileSize + this.TILES_IN_VIEW_X * this.tileSize){
-      this._windowOffsetX = - lvl1[0].length * this.tileSize + this.TILES_IN_VIEW_X * this.tileSize
+    } else if (this._windowOffsetX < this._maxWindowOffsetX){
+      this._windowOffsetX = this._maxWindowOffsetX
     }
   }
 
@@ -147,24 +150,24 @@ class Canvas extends Component {
      * Must be run after this._updateWindowOffset();
     */
     if(this._keystate[37]){ // Pressing left
-      if (this._windowOffsetX == 0) {
+      if (this._windowOffsetX === 0) {
         // We are at the left edge
-        console.log('We are moving left, and are at the left edge')
+        //console.log('We are moving left, and are at the left edge')
         this._playerX -= this._dx
-      } else if (this._windowOffsetX === - lvl1[0].length * this.tileSize + this.TILES_IN_VIEW_X * this.tileSize) {
+      } else if (this._windowOffsetX === this._maxWindowOffsetX) {
         // We are at the right edge
-        console.log('We are moving left and are at the right edge')
+        //console.log('We are moving left and are at the right edge')
         this._playerX -= this._dx
       }
     } else if(this._keystate[39]){ // Pressing right
-      if (this._windowOffsetX == 0) {
+      if (this._windowOffsetX === 0) {
         // We are at the left edge
-        console.log('We are moving right, and are at the left edge')
+        //console.log('We are moving right, and are at the left edge')
         this._playerX += this._dx
       }
-      if (this._windowOffsetX == - lvl1[0].length * this.tileSize + this.TILES_IN_VIEW_X * this.tileSize) { // Right pressed
+      else if (this._windowOffsetX === this._maxWindowOffsetX) { // Right pressed
           // We are at the right edge
-          console.log('We are moving right and are at the right edge')
+          //console.log('We are moving right and are at the right edge')
           this._playerX += this._dx
       }
     }
@@ -176,6 +179,17 @@ class Canvas extends Component {
     } else if (this._playerX > this.props.width - this._playerWidth) {
       console.log('Player hit right wall!')
       this._playerX = this.props.width - this._playerWidth;
+    }
+
+    // Handle cases where the player runs past the middle of the screen
+    if(this._windowOffsetX === 0 && this._playerX > this.props.width/2 - this._playerWidth/2){
+      // We are at the left edge
+      console.log('Player ran right across the middle!')
+      this._playerX = this.props.width/2 - this._playerWidth/2
+    } else if (this._windowOffsetX === this._maxWindowOffsetX && this._playerX < this.props.width/2 - this._playerWidth/2) {
+      // We are at the right edge
+      console.log('Player ran left across the middle!')
+      this._playerX = this.props.width/2 - this._playerWidth/2
     }
   }
 
