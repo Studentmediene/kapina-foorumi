@@ -9,10 +9,12 @@ export const PlayerState = Object.freeze({
 
 
 export default class Player {
-  constructor(context, width, height, image, flippedImage) {
+  constructor(context, width, height, stageWidth, stageHeight, image, flippedImage) {
     this.context = context;
     this.width = width;
     this.height = height;
+    this.stageWidth = stageWidth;
+    this.stageHeight = stageHeight;
     this.image = image;
     this.flippedImage = flippedImage;
   }
@@ -31,15 +33,18 @@ export default class Player {
   tickCount = 0;
   ticksPerFrame = 5;
   numberOfFrames = 14;
+  spriteWidth = 96;
+  spriteHeight = 80;
 
   // Fields containing the state of the player
-  x = 0;
-  y = 0;
-  currentSpeedX = 0;
-  currentSpeedY = 0;
+  x = 0; // The centre of the player
+  y = 0; // The centre of the player
+  currentSpeedX = 8;
+  currentSpeedY = -40;
 
-  playerHitBoxWidth = 40;
-  playerHitBoxHeight = 80;
+  hitBoxWidth = 40;
+  hitBoxHeight = 80;
+
 
   state = PlayerState.STANDING;
 
@@ -55,19 +60,93 @@ export default class Player {
       0, // Start y clip of image
       this.width / this.numberOfFrames, // End x clip of image
       this.height, // End y clip of image
-      this.x, // Start x
-      this.y, // Start y
+      this.x - this.spriteWidth/2, // Start x on canvas
+      this.y, // Start y on canvas
       this.width / this.numberOfFrames, // Width on canvas
       this.height // Height on canvas
     );
   };
 
-  update() {
-    if (this.state == PlayerState.RUNNING) {
+  update(keystate, windowOffset, maxWindowOffset) {
+
+    /**
+     * Must be run after this._updateWindowOffset();
+    */
+    if(keystate[37]){ // Pressing left
+      this.isFlipped = true;
+      // If we are not jumping, then we are running
+      if (this.state !== PlayerState.JUMPING) {
+        this.state = PlayerState.RUNNING;
+      }
+      if (windowOffset === 0) {
+        // We are at the left edge
+        //console.log('We are moving left, and are at the left edge')
+        this.x -= this.currentSpeedX;
+      } else if (windowOffset === maxWindowOffset) {
+        // We are at the right edge
+        //console.log('We are moving left and are at the right edge')
+        this.x -= this.currentSpeedX;
+      }
+    } else if(keystate[39]){ // Pressing right
+      this.isFlipped = false;
+      // If we are not jumping, then we are running
+      if (this.state !== PlayerState.JUMPING) {
+        this.state = PlayerState.RUNNING;
+      }
+      if (windowOffset === 0) {
+        // We are at the left edge
+        //console.log('We are moving right, and are at the left edge')
+        this.x += this.currentSpeedX
+      } else if (windowOffset === maxWindowOffset) {
+          // We are at the right edge
+          //console.log('We are moving right and are at the right edge')
+          this.x += this.currentSpeedX
+      }
+    } else if(this.state !== PlayerState.JUMPING) {
+      this.state = PlayerState.STANDING;
+    }
+
+    // Handle jumping
+    // If the player is not already jumping, and "up" is pressed...
+    if(this.state !== PlayerState.JUMPING && keystate[38]) {
+      this.state = PlayerState.JUMPING;
+    }
+    if(this.state === PlayerState.JUMPING) {
+      this.y += this.currentSpeedY;
+      this.currentSpeedY += 4;
+      if(this.y > this.stageHeight - 37*2 - this.hitBoxHeight/2){
+        this.state = PlayerState.STANDING;
+        this.y = this.stageHeight - 37*2 - this.hitBoxHeight/2;
+        this.currentSpeedY = -40;
+      }
+    }
+
+    // Handle cases where the player is about to leave the stage
+    if(this.x < this.hitBoxWidth/2){
+      console.log('Player hit left wall!')
+      this.x = this.hitBoxWidth/2;
+    } else if (this.x > this.stageWidth - this.hitBoxWidth/2) {
+      console.log('Player hit right wall!')
+      this.x = this.stageWidth - this.hitBoxWidth/2;
+    }
+
+    // Handle cases where the player runs past the middle of the screen
+    if(windowOffset === 0 && this.x > this.stageWidth/2){
+      // We are at the left edge
+      console.log('Player ran in the right direction across the middle!')
+      this.x = this.stageWidth/2
+    } else if (windowOffset === maxWindowOffset && this.x < this.stageWidth/2) {
+      // We are at the right edge
+      console.log('Player ran left across the middle!')
+      this.x = this.stageWidth/2;
+    }
+
+
+    if (this.state === PlayerState.RUNNING) {
       this.updateRun()
-    } else if (this.state == PlayerState.JUMPING) {
+    } else if (this.state === PlayerState.JUMPING) {
       this.updateJump()
-    } else if (this.state == PlayerState.THROWING) {
+    } else if (this.state === PlayerState.THROWING) {
       this.updateThrow()
     } else {
       this.updateStand()
