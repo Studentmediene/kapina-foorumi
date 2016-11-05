@@ -7,9 +7,9 @@ var Player = function (context, width, height, image) {
   this.width = width;
   this.height = height;
   this.image = image;
-  
+
   this.running = false;
-  
+
   this.standIndex = 0;
   this.runStartIndex = 1;
   this.runEndIndex = 8;
@@ -17,16 +17,16 @@ var Player = function (context, width, height, image) {
   this.throwEndIndex = 11;
   this.jumpStartIndex = 12;
   this.jumpEndIndex = 13;
-  
+
   this.frameIndex = 0;
   this.tickCount = 0;
-  this.ticksPerFrame = 15;
+  this.ticksPerFrame = 5;
   this.numberOfFrames = 14;
-  
+
 };
 
 Player.prototype.render = function () {
-  this.context.clearRect(0, 0, this.width, this.height);
+  console.log('Drawing image')
   this.context.drawImage(
     this.image,
     this.frameIndex * this.width / this.numberOfFrames,
@@ -82,6 +82,3 @@ Player.prototype.updateThrow = function() {
 
 
 export default Player;
-
-
-
