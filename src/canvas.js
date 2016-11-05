@@ -4,6 +4,7 @@ import ReactDom from 'react-dom';
 import './canvas.css'
 import Player from './Player'
 import playerImage from './it-man-sprite.png'
+import flippedPlayerImage from './it-man-sprite-flipped.png'
 import './canvas.css'
 import lvl1 from './level1'
 
@@ -35,6 +36,7 @@ class Canvas extends Component {
   _windowOffsetX = 0;
   _windowOffsetY = 0;
   _player: null;
+  _playerFlipped = true;
   _playerWidth = 40;
   _playerHeight = -80;
   _playerX = this.props.width/2 - this._playerWidth/2;
@@ -80,8 +82,10 @@ class Canvas extends Component {
     });
 
     const image = new Image();
+    const flippedImage = new Image();
     image.src = playerImage;
-    this._player = new Player(this._context, 1048, 80, image);
+    flippedImage.src = flippedPlayerImage;
+    this._player = new Player(this._context, 1050, 80, image, flippedImage);
 
 
 
@@ -116,7 +120,7 @@ class Canvas extends Component {
   }
 
   _update() {
-    this._player.updateRun();
+    this._player.updateRun(this._playerFlipped);
 
     // Put all computations of the new state here
     this._updateWindowOffset();
@@ -217,7 +221,7 @@ class Canvas extends Component {
     this._context.clearRect(0, 0, this.props.width, this.props.height);
     this.drawTiles();
     this._drawPlayer();
-        this._player.render();
+        this._player.render(this._playerFlipped);
     //this._drawBall();
   }
 
