@@ -7,6 +7,12 @@ import playerImage from './it-man-sprite.png'
 import flippedPlayerImage from './it-man-sprite-flipped.png'
 import './canvas.css'
 import lvl1 from './level1'
+import grassBlock from './grass-block.png'
+import grassBlockLeft from './grass-block-left.png'
+import grassBlockRight from './grass-block-right.png'
+import cloud1 from './cloud1.png'
+import cloud2 from './cloud2.png'
+import cloud3 from './cloud3.png'
 
 class Canvas extends Component {
   constructor(props) {
@@ -146,31 +152,48 @@ class Canvas extends Component {
   }
 
   drawTiles() {
-    this._context.beginPath();
-    this._context.lineWidth = 1;
-    this._context.fillStyle = "rgba(255,0,0,0.6)";
-    this._context.strokeStyle = "black";
     lvl1.forEach((row,i) => {
       row.forEach((tile,j) => {
-        if(tile !== 'o'){ //if tile is not walkable
-          this.drawTile(j * this.tileSize,
-                        i * this.tileSize,
-                        this.tileSize,
-                        this.tileSize,
-                        this.windowOffset); //draw a rectangle at j,i
+        if(tile !== 'o'){ // If tile is not sky.
+          this.drawTile(tile, j, i);
         }
       });
     });
-    this._context.fill();
-    this._context.stroke();
-    this._context.closePath();
   }
 
-  drawTile(x,y, length, height, offsetX){
-    this._context.rect(
-      x + offsetX, y,
-      height, length
-    );
+  drawTile(tileType, col, row){
+    const img = new Image();
+    let x = col * this.tileSize + this.windowOffset;
+    let y = row * this.tileSize;
+    let width = this.tileSize;
+    let height = this.tileSize;
+    
+    if (tileType == '#') {
+      img.src = grassBlock;
+    }
+    else if (tileType == '<') {
+      img.src = grassBlockLeft;
+    }
+    else if (tileType == '>') {
+      img.src = grassBlockRight;
+    }
+    else if (tileType == 'c1') {
+      img.src = cloud1;
+    }
+    else if (tileType == 'c2') {
+      img.src = cloud2;
+    }
+    else if (tileType == 'c3') {
+      img.src = cloud3;
+    }
+    
+    /* If the tile is a type of cloud */
+    if (tileType.includes("c")) {
+      width = width * 3;
+      height = height * 2;
+    }
+    
+    this._context.drawImage(img, x, y, width, height);
   }
 
   render() {
