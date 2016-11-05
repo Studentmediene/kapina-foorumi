@@ -12,8 +12,6 @@ class Canvas extends Component {
     super(props);
     this._startGame = this._startGame.bind(this);
     this._animate = this._animate.bind(this);
-    this.drawTiles = this.drawTiles.bind(this);
-    this.drawTile = this.drawTile.bind(this);
   }
 
   fps = 50;
@@ -32,7 +30,7 @@ class Canvas extends Component {
   _x = this.props.width/2;
   _y = this.props.height-30;
   _dx = 8;
-  _dy = 8;
+  _dy = -40;
   tileSize = 40;
   _windowOffsetX = 0;
   _windowOffsetY = 0;
@@ -41,6 +39,9 @@ class Canvas extends Component {
   _playerHeight = -80;
   _playerX = this.props.width/2 - this._playerWidth/2;
   _playerY = this.props.height - this.tileSize;
+
+  //MOVE TO PLAYER.js LATER
+  isJumping = false;
 
   _maxWindowOffsetX = - lvl1[0].length * this.tileSize + this.TILES_IN_VIEW_X * this.tileSize
 
@@ -172,6 +173,21 @@ class Canvas extends Component {
       }
     }
 
+    // Handle jumping
+    // If the player is not already jumping, and "up" is pressed...
+    if(!this.isJumping && this._keystate[38]) {
+      this.isJumping = true;
+    }
+    if(this.isJumping) {
+      this._playerY += this._dy;
+      this._dy += 4;
+      if(this._playerY > this.props.height - this.tileSize){
+        this.isJumping = false;
+        this._playerY = this.props.height - this.tileSize;
+        this._dy = -40;
+      }
+    }
+
     // Handle cases where the player is about to leave the stage
     if(this._playerX < 0){
       console.log('Player hit left wall!')
@@ -220,9 +236,27 @@ class Canvas extends Component {
       this._playerWidth,
       0,
       0);
+
+      this._context.lineWidth = 1;
+      this._context.strokeStyle = "black";
+      this._context.beginPath();
+      this._context.arc(this._playerX + this._playerWidth/2, this._playerY - 60, this._ballRadius, 0, Math.PI);
+      this._context.stroke()
+      this._context.closePath();
+
+      this._context.beginPath();
+      this._context.arc(this._playerX + this._playerWidth/2 - 5, this._playerY - 65, 2, 0, Math.PI*2);
+      this._context.stroke()
+      this._context.closePath();
+
+      this._context.beginPath();
+      this._context.arc(this._playerX + this._playerWidth/2 + 5, this._playerY - 65, 2, 0, Math.PI*2);
+      this._context.stroke();
+      this._context.closePath();
   }
 
   drawTiles() {
+    this._context.lineWidth = 1;
     this._context.fillStyle = "rgba(255,0,0,0.6)";
     this._context.strokeStyle = "black";
     lvl1.forEach((row,i) => {
