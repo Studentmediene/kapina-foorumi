@@ -26,8 +26,6 @@ class Canvas extends Component {
   canvas = undefined;
   _context = undefined;
   gameStarted = false;
-  _dx = 8;
-  _dy = -40;
   tileSize = 40;
   windowOffset = 0;
   player: null;
@@ -115,13 +113,13 @@ class Canvas extends Component {
       if(this.player.x < this.props.width/2){
         return;
       }
-      this.windowOffset -= this._dx
+      this.windowOffset -= this.player.currentSpeedX
     } else if (this.keystate[37]) { // Left pressed
       // If the player is moving on the right side, do nothing
       if(this.player.x > this.props.width/2){
         return
       }
-      this.windowOffset += this._dx
+      this.windowOffset += this.player.currentSpeedX
     }
 
     // Handle situations when the window is on the edge of the map
