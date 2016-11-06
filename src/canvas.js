@@ -41,7 +41,7 @@ class Canvas extends Component {
   player: null;
   bugs: null;
   coins: null;
-
+  edges: null;
   maxWindowOffsetX = - lvl1[0].length * this.tileSize + this.TILES_IN_VIEW_X * this.tileSize
 
 
@@ -96,19 +96,32 @@ class Canvas extends Component {
         }
       });
     });
+    
+    this.edges = [];
+    lvl1.forEach((row,i) => {
+      row.forEach((tile,j) => {
+        if(tile == '>' || tile == '<') { // If tile is not sky.
+          this.edges.push({x: j * this.tileSize, y: i * this.tileSize});
+        }
+      });
+    });
+    console.log(this.edges);
+    
     this.bugs = [];
     lvl1.forEach((row,i) => {
       row.forEach((tile,j) => {
         if(tile == 'b'){
           const bugImage = new Image();
           bugImage.src = bugSprite;
-          const bug = new Bug(this._context, bugImage, lvl1[0].length * this.tileSize, this.props.height, j*this.tileSize, i*this.tileSize, this.tileSize, this.tileSize);
+          const bug = new Bug(this._context, bugImage, lvl1[0].length * this.tileSize, this.props.height, j*this.tileSize, i*this.tileSize, this.tileSize, this.tileSize, this.edges);
           this.bugs.push(bug);
         }
       });
     });
+    
+    
 
-
+    
 
     // Start the animation
     this.startTime = Date.now();
@@ -117,6 +130,9 @@ class Canvas extends Component {
     this.animate()
 
   }
+
+
+  
 
   animate() {
 
