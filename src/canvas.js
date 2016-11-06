@@ -38,7 +38,7 @@ class Canvas extends Component {
   tileSize = 40;
   windowOffset = 0;
   player: null;
-  bug: null;
+  bugs: null;
   coins: null;
 
   maxWindowOffsetX = - lvl1[0].length * this.tileSize + this.TILES_IN_VIEW_X * this.tileSize
@@ -95,10 +95,17 @@ class Canvas extends Component {
         }
       });
     });
-
-    const bugImage = new Image();
-    bugImage.src = grassBlock;
-    this.bug = new Bug(this._context, bugImage, lvl1[0].length * this.tileSize, this.props.height, this.props.width/2, this.props.height -80, this.tileSize, this.tileSize)
+    this.bugs = [];
+    lvl1.forEach((row,i) => {
+      row.forEach((tile,j) => {
+        if(tile == 'b'){
+          const bugImage = new Image();
+          bugImage.src = grassBlock;
+          const bug = new Bug(this._context, bugImage, lvl1[0].length * this.tileSize, this.props.height, j*this.tileSize, i*this.tileSize, this.tileSize, this.tileSize);
+          this.bugs.push(bug);
+        }
+      });
+    });
 
 
 
@@ -172,7 +179,9 @@ class Canvas extends Component {
   }
 
   updateBugPostition() {
-    this.bug.update(this.windowOffset, this.maxWindowOffset);
+    this.bugs.forEach((bug) =>{
+      bug.update(this.windowOffset, this.maxWindowOffset);
+      })
   }
 
   _draw() {
@@ -185,7 +194,9 @@ class Canvas extends Component {
   }
 
   drawBug(){
-    this.bug.draw();
+    this.bugs.forEach((bug) => {
+      bug.draw();
+    })
   }
 
   drawPlayer() {
