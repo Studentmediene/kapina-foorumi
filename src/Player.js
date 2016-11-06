@@ -65,6 +65,11 @@ export default class Player {
       this.width / this.numberOfFrames, // Width on canvas
       this.height // Height on canvas
     );
+    this.context.strokeRect(
+      this.x - this.hitBoxWidth/2,
+      this.y,
+      this.hitBoxWidth,
+      this.hitBoxHeight);
   };
 
   update(keystate, windowOffset, maxWindowOffset) {
