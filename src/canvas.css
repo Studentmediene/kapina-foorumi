@@ -1,6 +1,7 @@
 .canvas {
   background: #eee;
   display: block;
+  font-family: 'Press Start 2P', cursive;
   margin: 0 auto;
   background: linear-gradient(180deg, #2EA4FF, #79D8FD);
 }

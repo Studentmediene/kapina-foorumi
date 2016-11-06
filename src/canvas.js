@@ -19,6 +19,7 @@ class Canvas extends Component {
     super(props);
     this._startGame = this._startGame.bind(this);
     this.animate = this.animate.bind(this);
+    this.drawInformation = this.drawInformation.bind(this);
   }
 
   // Fields handling the speed of the game loop
@@ -26,6 +27,8 @@ class Canvas extends Component {
   fpsInterval = 1000/this.fps;
   startTime = undefined;
   then = undefined;
+
+  score = 0;
 
   TILES_IN_VIEW_X = 16;
   keystate = {};
@@ -41,7 +44,6 @@ class Canvas extends Component {
 
   componentDidMount() {
     this._setupCanvas();
-    this._context.font = '30px Arial';
     this._context.fillText('Foorumi',
       this.props.width/2,
       this.props.height/2 );
@@ -110,7 +112,8 @@ class Canvas extends Component {
   _update() {
     // Put all computations of the new state here
     this.updateWindowOffset();
-    this.updatePlayerPosition()
+    this.updatePlayerPosition();
+    this.updateInformation();
   }
 
   updateWindowOffset() {
@@ -140,15 +143,16 @@ class Canvas extends Component {
     this.player.update(this.keystate, this.windowOffset, this.maxWindowOffsetX);
   }
 
+  updateInformation() {
+    
+  }
+
   _draw() {
     // Only put drawing on the canvas element here.
     this._context.clearRect(0, 0, this.props.width, this.props.height); // Clear canvas
     this.drawTiles(); // Draw the tiles in the world
     this.drawPlayer(); // Draw the player
-  }
-
-  drawPlayer() {
-    this.player.render();
+    this.drawInformation(); // Draw UI score, lives etc...
   }
 
   drawTiles() {
@@ -161,13 +165,26 @@ class Canvas extends Component {
     });
   }
 
+  drawPlayer() {
+    this.player.render();
+  }
+
+  drawInformation() {
+    this._context.font = '12px "Press Start 2P"'
+    this._context.fillText(
+      'Score: ' + this.score,
+      2,
+      14
+    )
+  }
+
   drawTile(tileType, col, row){
     const img = new Image();
     let x = col * this.tileSize + this.windowOffset;
     let y = row * this.tileSize;
     let width = this.tileSize;
     let height = this.tileSize;
-    
+
     if (tileType == '#') {
       img.src = grassBlock;
     }
@@ -186,13 +203,13 @@ class Canvas extends Component {
     else if (tileType == 'c3') {
       img.src = cloud3;
     }
-    
+
     /* If the tile is a type of cloud */
     if (tileType.includes("c")) {
       width = width * 3;
       height = height * 2;
     }
-    
+
     this._context.drawImage(img, x, y, width, height);
   }
 
