@@ -16,6 +16,7 @@ import cloud1 from './cloud1.png'
 import cloud2 from './cloud2.png'
 import cloud3 from './cloud3.png'
 import coin from './rrcoin-sprite.png'
+import bugSprite from './bug.png'
 
 class Canvas extends Component {
   constructor(props) {
@@ -100,7 +101,7 @@ class Canvas extends Component {
       row.forEach((tile,j) => {
         if(tile == 'b'){
           const bugImage = new Image();
-          bugImage.src = grassBlock;
+          bugImage.src = bugSprite;
           const bug = new Bug(this._context, bugImage, lvl1[0].length * this.tileSize, this.props.height, j*this.tileSize, i*this.tileSize, this.tileSize, this.tileSize);
           this.bugs.push(bug);
         }

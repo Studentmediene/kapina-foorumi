@@ -25,22 +25,24 @@ export default class Bug {
       this.currentSpeedX = -this.currentSpeedX;
     }
 
-    this.bugMoveAmount += 1;
-    if(this.bugMoveAmount % 3 == 0 ) {
-      if(!this.isBugJumping) {
+    if(!this.isBugJumping) {
         this.isBugJumping = true;
+        this.currentSpeedY = -10;
       }
       if(this.isBugJumping) {
+        if (this.currentSpeedY >= 0) {
+          this.currentSpeedY += 1;
+        }
+        else {
+          this.currentSpeedY += 1;
+        }
         this.y += this.currentSpeedY;
-        this.currentSpeedY += 16;
-        if(this.y > this.stageHeight - 80){
+        if (this.y + this.height > this.stageHeight - 40) {
           this.isBugJumping = false;
-          this.y = this.stageHeight - 80;
-          this.currentSpeedY = -40;
+          this.currentSpeedY = 0;
         }
       }
 
-    }
   }
 
   draw() {
