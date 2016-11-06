@@ -3,6 +3,7 @@ import ReactDom from 'react-dom';
 
 import './canvas.css'
 import Player, { PlayerState } from './Player'
+import Rect from './Rect'
 import playerImage from './it-man-sprite.png'
 import flippedPlayerImage from './it-man-sprite-flipped.png'
 import './canvas.css'
@@ -29,10 +30,15 @@ class Canvas extends Component {
   tileSize = 40;
   windowOffset = 0;
   player: null;
+  collisionRects: undefined;
+  boardWidth: 0;
 
   maxWindowOffsetX = - lvl1[0].length * this.tileSize + this.TILES_IN_VIEW_X * this.tileSize
 
-
+  offsetX: 0;
+  offsetY: 0;
+  
+  
   componentDidMount() {
     this._setupCanvas();
     this._context.font = '30px Arial';
@@ -63,21 +69,25 @@ class Canvas extends Component {
       // Do not use delete, setting to undefined is faster.
       this.keystate[evt.keyCode] = undefined;
     });
-
+    this.boardSize = lvl1[0].length * this.tileSize;
     // Initialize the player
     const image = new Image();
     const flippedImage = new Image();
     image.src = playerImage;
     flippedImage.src = flippedPlayerImage;
     this.player = new Player(this._context, 1344, 80, this.props.width, this.props.height,  image, flippedImage);
-    this.player.x = this.props.width/2;
-    this.player.y = this.props.height - 37*2 - this.player.hitBoxHeight/2;
+    this.player.x = this.props.width / 2;
+    this.player.y = this.props.height - 37*2 - this.player.hitBoxHeight / 2;
+    this.player.rect.x = this.player.x - this.player.hitBoxWidth / 2;
+    this.player.rect.y = this.player.y - this.player.hitBoxHeight / 2;
+    this.collisionRects = [];
+    this.makeCollisionRects();
 
     // Start the animation
     this.startTime = Date.now();
     this.then = this.startTime;
     this.gameStarted = true;
-    this.animate()
+    this.animate();
 
   }
 
@@ -104,19 +114,22 @@ class Canvas extends Component {
   _update() {
     // Put all computations of the new state here
     this.updateWindowOffset();
-    this.updatePlayerPosition()
+    this.makeCollisionRects();
+    this.updatePlayerPosition();
+    
   }
 
   updateWindowOffset() {
+    
     if (this.keystate[39]){ // Right pressed
       // If the player is moving on the left side, do nothing
-      if(this.player.x < this.props.width/2){
+      if(this.player.rect.x < this.props.width/2){
         return;
       }
       this.windowOffset -= this.player.currentSpeedX
     } else if (this.keystate[37]) { // Left pressed
       // If the player is moving on the right side, do nothing
-      if(this.player.x > this.props.width/2){
+      if(this.player.rect.x > this.props.width/2){
         return
       }
       this.windowOffset += this.player.currentSpeedX
@@ -131,7 +144,7 @@ class Canvas extends Component {
   }
 
   updatePlayerPosition() {
-    this.player.update(this.keystate, this.windowOffset, this.maxWindowOffsetX);
+    this.player.update(this.keystate, this.windowOffset, this.maxWindowOffsetX, this.collisionRects);
   }
 
   _draw() {
@@ -171,7 +184,21 @@ class Canvas extends Component {
       x + offsetX, y,
       height, length
     );
+    
   }
+  
+  // Generate the collisionrects from the # tiles.
+  makeCollisionRects() {
+    this.collisionRects = [];
+    lvl1.forEach((row, i) => {
+      row.forEach((tile, j) => {
+        if (tile == '#') {
+            this.collisionRects.push(new Rect(j * this.tileSize + this.windowOffset, i * this.tileSize, this.tileSize, this.tileSize));
+        }
+      })
+    })
+  }
+
 
   render() {
     return (

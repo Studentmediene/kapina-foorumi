@@ -1,4 +1,6 @@
 
+import Rect from './Rect'
+
 export const PlayerState = Object.freeze({
   STANDING: 'STANDING',
   RUNNING: 'RUNNING',
@@ -40,11 +42,12 @@ export default class Player {
   x = 0; // The centre of the player
   y = 0; // The centre of the player
   currentSpeedX = 8;
-  currentSpeedY = -40;
+  currentSpeedY = 8;
 
   hitBoxWidth = 40;
   hitBoxHeight = 80;
 
+  rect = new Rect(0, 0, 40, 80);
 
   state = PlayerState.STANDING;
 
@@ -67,12 +70,85 @@ export default class Player {
     );
   };
 
-  update(keystate, windowOffset, maxWindowOffset) {
+  update(keystate, windowOffset, maxWindowOffset, collisionRects) {
 
     /**
      * Must be run after this._updateWindowOffset();
     */
-    if(keystate[37]){ // Pressing left
+    
+    // Find out if the player collides with any of the collisionRects 
+   /* var collisionBottom = false;
+    var collisionRight = false;
+    
+    collisionRects.forEach(rect => {
+     
+      let collision = this.rect.isCollidingWith(rect)
+      if (collision.bottom) {
+        collisionBottom = true;
+      }
+      if (collision.right) {
+        collisionRight = true;
+      }
+    })
+    
+    // If the player collides set the current Y speed to 0. Otherwise accelerate the player towards the ground.
+    if (collisionBottom) {
+      this.currentSpeedY = 0;
+      this.state = PlayerState.STANDING; // The player has landed.
+    }
+    else {
+      this.currentSpeedY += 2;
+    }
+    
+    
+    console.log(this.state);
+    // If the player is not already jumping, and "up" is pressed
+    if(this.state !== PlayerState.JUMPING && keystate[38]) {
+      this.state = PlayerState.JUMPING;
+      this.currentSpeedY += -20;
+    }
+    // If left is pressed
+    else if (keystate[37]) {
+      this.isFlipped = true;
+      // Accelerate in the left direction if max speed is not reached.
+      if (this.currentSpeedX > -10) {
+        this.currentSpeedX -= 2;
+      }
+    }
+    // If right is pressed
+    else if (keystate[39] && !collisionRight) {
+      this.isFlipped = false;
+      // Accelerate in the right direction if max speed is not reached. 
+      if (this.currentSpeedX < 10) {
+        this.currentSpeedX += 2;
+      }
+    }
+    
+    // Motion in the X-axis without motion in the Y-axis, means we are RUNNING
+    if (this.currentSpeedX != 0 && this.currentSpeedY == 0 && this.state != PlayerState.JUMPING) {
+      this.state = PlayerState.RUNNING;
+    }
+    
+    // Deaccelerate in the x direction
+    if (this.currentSpeedX < 0) {
+      this.currentSpeedX += 1;
+    }
+    else if (this.currentSpeedX > 0) {
+      this.currentSpeedX -= 1;
+    }
+    
+    // Increment x and y with the current speeds
+    this.x += this.currentSpeedX;
+    this.y += this.currentSpeedY;
+    this.rect.x = this.x;
+    this.rect.y = this.y;
+    
+    */
+    
+    
+
+    
+    /*if(keystate[37]){ // Pressing left
       this.isFlipped = true;
       // If we are not jumping, then we are running
       if (this.state !== PlayerState.JUMPING) {
@@ -104,8 +180,8 @@ export default class Player {
       }
     } else if(this.state !== PlayerState.JUMPING) {
       this.state = PlayerState.STANDING;
-    }
-
+    }*/
+/*
     // Handle jumping
     // If the player is not already jumping, and "up" is pressed...
     if(this.state !== PlayerState.JUMPING && keystate[38]) {
@@ -120,9 +196,9 @@ export default class Player {
         this.currentSpeedY = -40;
       }
     }
-
+*/
     // Handle cases where the player is about to leave the stage
-    if(this.x < this.hitBoxWidth/2){
+    /*if(this.x < this.hitBoxWidth/2){
       console.log('Player hit left wall!')
       this.x = this.hitBoxWidth/2;
     } else if (this.x > this.stageWidth - this.hitBoxWidth/2) {
@@ -139,9 +215,9 @@ export default class Player {
       // We are at the right edge
       console.log('Player ran left across the middle!')
       this.x = this.stageWidth/2;
-    }
-
-
+    }*/
+    
+    // Update sprite
     if (this.state === PlayerState.RUNNING) {
       this.updateRun()
     } else if (this.state === PlayerState.JUMPING) {
