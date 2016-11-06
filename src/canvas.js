@@ -3,6 +3,7 @@ import ReactDom from 'react-dom';
 
 import './canvas.css'
 import Player, { PlayerState } from './Player'
+import AnimatedSprite from './AnimatedSprite'
 import playerImage from './it-man-sprite.png'
 import flippedPlayerImage from './it-man-sprite-flipped.png'
 import './canvas.css'
@@ -13,6 +14,7 @@ import grassBlockRight from './grass-block-right.png'
 import cloud1 from './cloud1.png'
 import cloud2 from './cloud2.png'
 import cloud3 from './cloud3.png'
+import coin from './rrcoin-sprite.png'
 
 class Canvas extends Component {
   constructor(props) {
@@ -35,6 +37,8 @@ class Canvas extends Component {
   tileSize = 40;
   windowOffset = 0;
   player: null;
+
+  coins: null;
 
   maxWindowOffsetX = - lvl1[0].length * this.tileSize + this.TILES_IN_VIEW_X * this.tileSize
 
@@ -78,6 +82,20 @@ class Canvas extends Component {
     this.player = new Player(this._context, 1344, 80, this.props.width, this.props.height,  image, flippedImage);
     this.player.x = this.props.width/2;
     this.player.y = this.props.height - 37*2 - this.player.hitBoxHeight/2;
+    
+    this.coins = [];
+    lvl1.forEach((row,i) => {
+      row.forEach((tile,j) => {
+        if(tile == 'm'){ // If tile is not sky.
+          const img = new Image();
+          img.src = coin;
+          const coinSprite = new AnimatedSprite(this._context, img, 308, 40, 7, j*this.tileSize, i*this.tileSize);
+          this.coins.push(coinSprite);
+        }
+      });
+    });
+
+
 
     // Start the animation
     this.startTime = Date.now();
@@ -110,7 +128,8 @@ class Canvas extends Component {
   _update() {
     // Put all computations of the new state here
     this.updateWindowOffset();
-    this.updatePlayerPosition()
+    this.updatePlayerPosition();
+    this.updateCoins();
   }
 
   updateWindowOffset() {
@@ -140,21 +159,34 @@ class Canvas extends Component {
     this.player.update(this.keystate, this.windowOffset, this.maxWindowOffsetX);
   }
 
+  updateCoins() {
+    this.coins.forEach((coin) => {
+      coin.update(this.windowOffset);
+    })
+  }
+
   _draw() {
     // Only put drawing on the canvas element here.
     this._context.clearRect(0, 0, this.props.width, this.props.height); // Clear canvas
     this.drawTiles(); // Draw the tiles in the world
     this.drawPlayer(); // Draw the player
+    this.drawCoins();
   }
 
   drawPlayer() {
     this.player.render();
   }
 
+  drawCoins() {
+    this.coins.forEach((coin) => {
+      coin.draw();
+    })
+  }
+
   drawTiles() {
     lvl1.forEach((row,i) => {
       row.forEach((tile,j) => {
-        if(tile !== 'o'){ // If tile is not sky.
+        if(tile !== 'o' || tile !== 'm'){ // If tile is not sky or money.
           this.drawTile(tile, j, i);
         }
       });
