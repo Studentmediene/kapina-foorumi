@@ -3,6 +3,7 @@ import ReactDom from 'react-dom';
 
 import './canvas.css'
 import Player, { PlayerState } from './Player'
+import Bug from './Bug'
 import AnimatedSprite from './AnimatedSprite'
 import playerImage from './it-man-sprite.png'
 import flippedPlayerImage from './it-man-sprite-flipped.png'
@@ -15,6 +16,7 @@ import cloud1 from './cloud1.png'
 import cloud2 from './cloud2.png'
 import cloud3 from './cloud3.png'
 import coin from './rrcoin-sprite.png'
+import bugSprite from './bug.png'
 
 class Canvas extends Component {
   constructor(props) {
@@ -37,7 +39,7 @@ class Canvas extends Component {
   tileSize = 40;
   windowOffset = 0;
   player: null;
-
+  bugs: null;
   coins: null;
 
   maxWindowOffsetX = - lvl1[0].length * this.tileSize + this.TILES_IN_VIEW_X * this.tileSize
@@ -82,7 +84,7 @@ class Canvas extends Component {
     this.player = new Player(this._context, 1344, 80, this.props.width, this.props.height,  image, flippedImage);
     this.player.x = this.props.width/2;
     this.player.y = this.props.height - 37*2 - this.player.hitBoxHeight/2;
-    
+
     this.coins = [];
     lvl1.forEach((row,i) => {
       row.forEach((tile,j) => {
@@ -91,6 +93,17 @@ class Canvas extends Component {
           img.src = coin;
           const coinSprite = new AnimatedSprite(this._context, img, 308, 40, 7, j*this.tileSize, i*this.tileSize);
           this.coins.push(coinSprite);
+        }
+      });
+    });
+    this.bugs = [];
+    lvl1.forEach((row,i) => {
+      row.forEach((tile,j) => {
+        if(tile == 'b'){
+          const bugImage = new Image();
+          bugImage.src = bugSprite;
+          const bug = new Bug(this._context, bugImage, lvl1[0].length * this.tileSize, this.props.height, j*this.tileSize, i*this.tileSize, this.tileSize, this.tileSize);
+          this.bugs.push(bug);
         }
       });
     });
@@ -129,6 +142,7 @@ class Canvas extends Component {
     // Put all computations of the new state here
     this.updateWindowOffset();
     this.updatePlayerPosition();
+    this.updateBugPostition();
     this.updateCoins();
   }
 
@@ -165,12 +179,25 @@ class Canvas extends Component {
     })
   }
 
+  updateBugPostition() {
+    this.bugs.forEach((bug) =>{
+      bug.update(this.windowOffset, this.maxWindowOffset);
+      })
+  }
+
   _draw() {
     // Only put drawing on the canvas element here.
     this._context.clearRect(0, 0, this.props.width, this.props.height); // Clear canvas
     this.drawTiles(); // Draw the tiles in the world
     this.drawPlayer(); // Draw the player
+    this.drawBug();
     this.drawCoins();
+  }
+
+  drawBug(){
+    this.bugs.forEach((bug) => {
+      bug.draw();
+    })
   }
 
   drawPlayer() {
@@ -199,7 +226,7 @@ class Canvas extends Component {
     let y = row * this.tileSize;
     let width = this.tileSize;
     let height = this.tileSize;
-    
+
     if (tileType == '#') {
       img.src = grassBlock;
     }
@@ -218,13 +245,13 @@ class Canvas extends Component {
     else if (tileType == 'c3') {
       img.src = cloud3;
     }
-    
+
     /* If the tile is a type of cloud */
     if (tileType.includes("c")) {
       width = width * 3;
       height = height * 2;
     }
-    
+
     this._context.drawImage(img, x, y, width, height);
   }
 
