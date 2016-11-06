@@ -45,12 +45,12 @@ export default class Player {
   currentSpeedX = 8;
   currentSpeedY = 8;
 
-  hitBoxWidth = 40;
-  hitBoxHeight = 80;
+  hitBoxWidth = 38;
+  hitBoxHeight = 74;
 
   rect = new Rect(0, 0, 40, 80);
 
-  state = PlayerState.STANDING;
+  state = PlayerState.JUMPING;
 
 
   render = function () {
@@ -71,7 +71,7 @@ export default class Player {
     );
   };
 
-  update(keystate, windowOffset, maxWindowOffset, collisionRects) {
+  update(keystate, windowOffset, maxWindowOffset, collisionRects, offset) {
 
     /**
      * Must be run after this._updateWindowOffset();
@@ -142,26 +142,25 @@ export default class Player {
 
     collisionRects.forEach(rect => {
 
-      let col = rect.isCollidingWith(this)
+      let col = rect.isCollidingWith(this, windowOffset)
       //console.log(col)
       if (col.bottom) {
-        console.log('Colliding bottom!')
-        collision.bottom = true;
+        //console.log('Colliding bottom!')
+        collision.bottom = col.bottom;
       }
       if (col.right) {
         console.log('Colliding right!')
         collision.right = true;
       }
       if (col.up) {
-        console.log('Colliding up!')
+        //console.log('Colliding up!')
         collision.up = true;
       }
       if (col.left) {
         console.log('Colliding left!')
         collision.left = true;
       }
-      }
-    )
+    });
 
 
 
@@ -176,12 +175,16 @@ export default class Player {
         //console.log('We are moving left, and are at the left edge')
         if(!collision.left){
           this.x -= this.currentSpeedX;
+        } else {
+          // place player on the edge of the object on the left
         }
       } else if (windowOffset === maxWindowOffset) {
         // We are at the right edge
         //console.log('We are moving left and are at the right edge')
         if(!collision.left){
           this.x -= this.currentSpeedX;
+        } else {
+          // place player on the edge of the object on the left
         }
       }
     } else if(keystate[39]){ // Pressing right
@@ -195,6 +198,8 @@ export default class Player {
         //console.log('We are moving right, and are at the left edge')
         if(!collision.right){
           this.x += this.currentSpeedX
+        } else {
+
         }
       } else if (windowOffset === maxWindowOffset) {
           // We are at the right edge
@@ -202,31 +207,37 @@ export default class Player {
           if(!collision.right){
             this.x += this.currentSpeedX
           } else {
-            console.log('Colliding right!')
+            // place player on the edge of the object on the right
           }
       }
     } else if(this.state !== PlayerState.JUMPING) {
       // If we aren't running or jumping, then we are standing
+      //console.log('We are now standing.')
       this.state = PlayerState.STANDING;
     }
 
     // Handle jumping
-    // If the player is not already jumping, and "up" is pressed...
-    if(this.state !== PlayerState.JUMPING && keystate[38]) {
+    // If the player standing on something, and "up" is pressed...
+
+    if(this.state === PlayerState.STANDING && keystate[38]) {
+      // We are standing on something, and jumping
+      console.log('JUMP')
       this.state = PlayerState.JUMPING;
+      collision.bottom = false;
+      this.currentSpeedY = -20;
+      this.y += this.currentSpeedY;
+    }
+    if(collision.bottom && this.state === PlayerState.JUMPING) {
+        this.state = PlayerState.STANDING;
+        this.currentSpeedY = 0;
+        console.log('placed player on the box')
+        this.y = collision.bottom.y - this.hitBoxHeight - 1;
     }
     if(this.state === PlayerState.JUMPING) {
-      if(collision.up) {
-        this.y += Math.abs(this.currentSpeedY);
-        this.currentSpeedY += 4;
-      } else if (collision.bottom){
-        this.state = PlayerState.STANDING;
-        this.currentSpeedY = -40;
-      } else {
-        this.y += this.currentSpeedY;
-        this.currentSpeedY += 4;
-      }
+      this.y += this.currentSpeedY;
+      this.currentSpeedY += 2;
     }
+
 
     // Handle cases where the player is about to leave the stage
     if(this.x < 0){

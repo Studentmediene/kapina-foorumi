@@ -78,8 +78,6 @@ class Canvas extends Component {
     this.player = new Player(this._context, 1344, 80, this.props.width, this.props.height,  image, flippedImage);
     this.player.x = this.props.width / 2 - this.player.hitBoxWidth / 2;
     this.player.y = this.props.height -120 - this.player.hitBoxHeight / 2;
-    this.player.rect.x = this.player.x - this.player.hitBoxWidth / 2;
-    this.player.rect.y = this.player.y - this.player.hitBoxHeight / 2;
 
 
     this.collisionRects = [];
@@ -117,7 +115,7 @@ class Canvas extends Component {
   _update() {
     // Put all computations of the new state here
     this.updateWindowOffset();
-    this.makeCollisionRects();
+    //this.makeCollisionRects();
     this.updatePlayerPosition();
 
   }
@@ -147,7 +145,7 @@ class Canvas extends Component {
   }
 
   updatePlayerPosition() {
-    this.player.update(this.keystate, this.windowOffset, this.maxWindowOffsetX, this.collisionRects);
+    this.player.update(this.keystate, this.windowOffset, this.maxWindowOffsetX, this.collisionRects, this.windowOffset);
   }
 
   _draw() {
@@ -202,8 +200,8 @@ class Canvas extends Component {
     lvl1.forEach((row, i) => {
       row.forEach((tile, j) => {
         if (tile == '#') {
-            this.collisionRects.push(new Rect(j * this.tileSize + this.windowOffset, i * this.tileSize, this.tileSize, this.tileSize));
-        }
+            this.collisionRects.push(new Rect(j * this.tileSize + this.windowOffset, i * this.tileSize, this.tileSize, this.tileSize, j, i));
+          }
       })
     })
   }
