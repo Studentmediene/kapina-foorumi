@@ -13,7 +13,7 @@ export default class Rect {
 
 
 
-  isCollidingWith = function(rect) {
+  isCollidingWith = function(player) {
 
     const collision = {
       top: false,
@@ -22,14 +22,16 @@ export default class Rect {
       left: false,
     };
 
-    if (this.x < rect.x + rect.width &&
-        this.x + this.width > rect.x &&
-        this.y < rect.y + rect.height &&
-        this.height + this.y > rect.y) {
-      if (this.x < rect.x && !(this.y + this.height < rect.y - 20)) collision.right = true;
-      if (this.x > rect.x) collision.left = true;
-      if (this.y < rect.y) collision.bottom = true;
-      if (this.y > rect.y) collision.top = true;
+    if (this.x < player.x + player.hitboxWidth &&
+        this.x + this.width > player.x &&
+        this.y < player.y + player.hitboxHeight &&
+        this.y + this.height > player.y) {
+          // The rectangle is colliding with the player
+          console.log('Collision!')
+      if (this.x < player.x + player.hitBoxwidth) collision.right = true;
+      if (this.x + this.height > player.x) collision.left = true;
+      if (this.y < player.y + player.hitBoxHeight) collision.bottom = true;
+      if (this.y + this.height > player.y) collision.top = true;
     }
     return collision;
   };

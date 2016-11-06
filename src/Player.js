@@ -19,6 +19,7 @@ export default class Player {
     this.stageHeight = stageHeight;
     this.image = image;
     this.flippedImage = flippedImage;
+    this.update = this.update.bind(this);
   }
 
   // Indexes used to render the correct sprite on canvas
@@ -76,20 +77,7 @@ export default class Player {
      * Must be run after this._updateWindowOffset();
     */
 
-    // Find out if the player collides with any of the collisionRects
-   /* var collisionBottom = false;
-    var collisionRight = false;
-
-    collisionRects.forEach(rect => {
-
-      let collision = this.rect.isCollidingWith(rect)
-      if (collision.bottom) {
-        collisionBottom = true;
-      }
-      if (collision.right) {
-        collisionRight = true;
-      }
-    })
+    /*
 
     // If the player collides set the current Y speed to 0. Otherwise accelerate the player towards the ground.
     if (collisionBottom) {
@@ -144,7 +132,36 @@ export default class Player {
     this.rect.y = this.y;
 
     */
+    // Find out if the player collides with any of the rectangles
+    const collision = {
+      up: false,
+      bottom: false,
+      left: false,
+      right: false,
+    }
 
+    collisionRects.forEach(rect => {
+
+      let col = rect.isCollidingWith(this)
+      //console.log(col)
+      if (col.bottom) {
+        console.log('Colliding bottom!')
+        collision.bottom = true;
+      }
+      if (col.right) {
+        console.log('Colliding right!')
+        collision.right = true;
+      }
+      if (col.up) {
+        console.log('Colliding up!')
+        collision.up = true;
+      }
+      if (col.left) {
+        console.log('Colliding left!')
+        collision.left = true;
+      }
+      }
+    )
 
 
 
@@ -157,11 +174,15 @@ export default class Player {
       if (windowOffset === 0) {
         // We are at the left edge
         //console.log('We are moving left, and are at the left edge')
-        this.x -= this.currentSpeedX;
+        if(!collision.left){
+          this.x -= this.currentSpeedX;
+        }
       } else if (windowOffset === maxWindowOffset) {
         // We are at the right edge
         //console.log('We are moving left and are at the right edge')
-        this.x -= this.currentSpeedX;
+        if(!collision.left){
+          this.x -= this.currentSpeedX;
+        }
       }
     } else if(keystate[39]){ // Pressing right
       this.isFlipped = false;
@@ -172,11 +193,17 @@ export default class Player {
       if (windowOffset === 0) {
         // We are at the left edge
         //console.log('We are moving right, and are at the left edge')
-        this.x += this.currentSpeedX
+        if(!collision.right){
+          this.x += this.currentSpeedX
+        }
       } else if (windowOffset === maxWindowOffset) {
           // We are at the right edge
           //console.log('We are moving right and are at the right edge')
-          this.x += this.currentSpeedX
+          if(!collision.right){
+            this.x += this.currentSpeedX
+          } else {
+            console.log('Colliding right!')
+          }
       }
     } else if(this.state !== PlayerState.JUMPING) {
       // If we aren't running or jumping, then we are standing
@@ -189,12 +216,15 @@ export default class Player {
       this.state = PlayerState.JUMPING;
     }
     if(this.state === PlayerState.JUMPING) {
-      this.y += this.currentSpeedY;
-      this.currentSpeedY += 4;
-      if(this.y > this.stageHeight - 37*2 - this.hitBoxHeight/2){
+      if(collision.up) {
+        this.y += Math.abs(this.currentSpeedY);
+        this.currentSpeedY += 4;
+      } else if (collision.bottom){
         this.state = PlayerState.STANDING;
-        this.y = this.stageHeight - 37*2 - this.hitBoxHeight/2;
         this.currentSpeedY = -40;
+      } else {
+        this.y += this.currentSpeedY;
+        this.currentSpeedY += 4;
       }
     }
 

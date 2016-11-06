@@ -84,6 +84,7 @@ class Canvas extends Component {
 
     this.collisionRects = [];
     this.makeCollisionRects();
+    console.log(this.collisionRects)
 
     // Start the animation
     this.startTime = Date.now();
