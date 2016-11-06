@@ -39,8 +39,8 @@ export default class Player {
   spriteHeight = 80;
 
   // Fields containing the state of the player
-  x = 0; // The centre of the player
-  y = 0; // The centre of the player
+  x = 0; // left side of the player
+  y = 0; // The top of the player
   currentSpeedX = 8;
   currentSpeedY = 8;
 
@@ -63,7 +63,7 @@ export default class Player {
       0, // Start y clip of image
       this.width / this.numberOfFrames, // End x clip of image
       this.height, // End y clip of image
-      this.x - this.spriteWidth/2, // Start x on canvas
+      this.x + this.hitBoxWidth / 2 - this.spriteWidth/2, // Start x on canvas
       this.y, // Start y on canvas
       this.width / this.numberOfFrames, // Width on canvas
       this.height // Height on canvas
@@ -75,13 +75,13 @@ export default class Player {
     /**
      * Must be run after this._updateWindowOffset();
     */
-    
-    // Find out if the player collides with any of the collisionRects 
+
+    // Find out if the player collides with any of the collisionRects
    /* var collisionBottom = false;
     var collisionRight = false;
-    
+
     collisionRects.forEach(rect => {
-     
+
       let collision = this.rect.isCollidingWith(rect)
       if (collision.bottom) {
         collisionBottom = true;
@@ -90,7 +90,7 @@ export default class Player {
         collisionRight = true;
       }
     })
-    
+
     // If the player collides set the current Y speed to 0. Otherwise accelerate the player towards the ground.
     if (collisionBottom) {
       this.currentSpeedY = 0;
@@ -99,8 +99,8 @@ export default class Player {
     else {
       this.currentSpeedY += 2;
     }
-    
-    
+
+
     console.log(this.state);
     // If the player is not already jumping, and "up" is pressed
     if(this.state !== PlayerState.JUMPING && keystate[38]) {
@@ -118,17 +118,17 @@ export default class Player {
     // If right is pressed
     else if (keystate[39] && !collisionRight) {
       this.isFlipped = false;
-      // Accelerate in the right direction if max speed is not reached. 
+      // Accelerate in the right direction if max speed is not reached.
       if (this.currentSpeedX < 10) {
         this.currentSpeedX += 2;
       }
     }
-    
+
     // Motion in the X-axis without motion in the Y-axis, means we are RUNNING
     if (this.currentSpeedX != 0 && this.currentSpeedY == 0 && this.state != PlayerState.JUMPING) {
       this.state = PlayerState.RUNNING;
     }
-    
+
     // Deaccelerate in the x direction
     if (this.currentSpeedX < 0) {
       this.currentSpeedX += 1;
@@ -136,19 +136,19 @@ export default class Player {
     else if (this.currentSpeedX > 0) {
       this.currentSpeedX -= 1;
     }
-    
+
     // Increment x and y with the current speeds
     this.x += this.currentSpeedX;
     this.y += this.currentSpeedY;
     this.rect.x = this.x;
     this.rect.y = this.y;
-    
-    */
-    
-    
 
-    
-    /*if(keystate[37]){ // Pressing left
+    */
+
+
+
+
+    if(keystate[37]){ // Pressing left
       this.isFlipped = true;
       // If we are not jumping, then we are running
       if (this.state !== PlayerState.JUMPING) {
@@ -179,9 +179,10 @@ export default class Player {
           this.x += this.currentSpeedX
       }
     } else if(this.state !== PlayerState.JUMPING) {
+      // If we aren't running or jumping, then we are standing
       this.state = PlayerState.STANDING;
-    }*/
-/*
+    }
+
     // Handle jumping
     // If the player is not already jumping, and "up" is pressed...
     if(this.state !== PlayerState.JUMPING && keystate[38]) {
@@ -196,27 +197,27 @@ export default class Player {
         this.currentSpeedY = -40;
       }
     }
-*/
+
     // Handle cases where the player is about to leave the stage
-    /*if(this.x < this.hitBoxWidth/2){
+    if(this.x < 0){
       console.log('Player hit left wall!')
-      this.x = this.hitBoxWidth/2;
-    } else if (this.x > this.stageWidth - this.hitBoxWidth/2) {
+      this.x = 0;
+    } else if (this.x > this.stageWidth - this.hitBoxWidth) {
       console.log('Player hit right wall!')
-      this.x = this.stageWidth - this.hitBoxWidth/2;
+      this.x = this.stageWidth - this.hitBoxWidth;
     }
 
     // Handle cases where the player runs past the middle of the screen
-    if(windowOffset === 0 && this.x > this.stageWidth/2){
+    if(windowOffset === 0 && this.x > this.stageWidth / 2 - this.hitBoxWidth / 2){
       // We are at the left edge
       console.log('Player ran in the right direction across the middle!')
-      this.x = this.stageWidth/2
-    } else if (windowOffset === maxWindowOffset && this.x < this.stageWidth/2) {
+      this.x = this.stageWidth / 2 - this.hitBoxWidth / 2
+    } else if (windowOffset === maxWindowOffset && this.x < this.stageWidth/2 - this.hitBoxWidth / 2) {
       // We are at the right edge
       console.log('Player ran left across the middle!')
-      this.x = this.stageWidth/2;
-    }*/
-    
+      this.x = this.stageWidth / 2 - this.hitBoxWidth / 2;
+    }
+
     // Update sprite
     if (this.state === PlayerState.RUNNING) {
       this.updateRun()

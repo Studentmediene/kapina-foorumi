@@ -37,8 +37,8 @@ class Canvas extends Component {
 
   offsetX: 0;
   offsetY: 0;
-  
-  
+
+
   componentDidMount() {
     this._setupCanvas();
     this._context.font = '30px Arial';
@@ -76,10 +76,12 @@ class Canvas extends Component {
     image.src = playerImage;
     flippedImage.src = flippedPlayerImage;
     this.player = new Player(this._context, 1344, 80, this.props.width, this.props.height,  image, flippedImage);
-    this.player.x = this.props.width / 2;
-    this.player.y = this.props.height - 37*2 - this.player.hitBoxHeight / 2;
+    this.player.x = this.props.width / 2 - this.player.hitBoxWidth / 2;
+    this.player.y = this.props.height -120 - this.player.hitBoxHeight / 2;
     this.player.rect.x = this.player.x - this.player.hitBoxWidth / 2;
     this.player.rect.y = this.player.y - this.player.hitBoxHeight / 2;
+
+
     this.collisionRects = [];
     this.makeCollisionRects();
 
@@ -116,20 +118,20 @@ class Canvas extends Component {
     this.updateWindowOffset();
     this.makeCollisionRects();
     this.updatePlayerPosition();
-    
+
   }
 
   updateWindowOffset() {
-    
+
     if (this.keystate[39]){ // Right pressed
       // If the player is moving on the left side, do nothing
-      if(this.player.rect.x < this.props.width/2){
+      if(this.player.x + this.player.hitBoxWidth / 2 < this.props.width/2){
         return;
       }
       this.windowOffset -= this.player.currentSpeedX
     } else if (this.keystate[37]) { // Left pressed
       // If the player is moving on the right side, do nothing
-      if(this.player.rect.x > this.props.width/2){
+      if(this.player.x + this.player.hitBoxWidth / 2 > this.props.width/2){
         return
       }
       this.windowOffset += this.player.currentSpeedX
@@ -156,6 +158,12 @@ class Canvas extends Component {
 
   drawPlayer() {
     this.player.render();
+    this._context.strokeRect(
+      this.player.x,
+      this.player.y,
+      this.player.hitBoxWidth,
+      this.player.hitBoxHeight
+    );
   }
 
   drawTiles() {
@@ -184,9 +192,9 @@ class Canvas extends Component {
       x + offsetX, y,
       height, length
     );
-    
+
   }
-  
+
   // Generate the collisionrects from the # tiles.
   makeCollisionRects() {
     this.collisionRects = [];

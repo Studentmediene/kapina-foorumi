@@ -3,25 +3,25 @@
 
 
 export default class Rect {
-  
+
   constructor(x, y, width, height) {
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = height;
   }
-  
-  
-  
+
+
+
   isCollidingWith = function(rect) {
-    
-    let collision = {
+
+    const collision = {
       top: false,
       bottom: false,
       right: false,
       left: false,
     };
-    
+
     if (this.x < rect.x + rect.width &&
         this.x + this.width > rect.x &&
         this.y < rect.y + rect.height &&
@@ -33,8 +33,5 @@ export default class Rect {
     }
     return collision;
   };
-  
+
 }
-
-
-
